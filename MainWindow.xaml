@@ -1,0 +1,30 @@
+﻿<Window x:Class="SmartSleep.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SmartSleep"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="357" Width="426" Loaded="OnWindowLoaded">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Label x:Name="CPUActivityLabel" Content="CPU Activity" HorizontalAlignment="Left" Margin="12,9,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="CPUActivityValue" Content="0" HorizontalAlignment="Left" Margin="164,9,0,0" VerticalAlignment="Top" Width="110"/>
+        <Label x:Name="CPUIdleTimeLabel" Content="CPU Idle Time" HorizontalAlignment="Left" Margin="12,65,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="CPUIdleTimeValue" Content="0" HorizontalAlignment="Left" Margin="164,65,0,0" VerticalAlignment="Top" Width="110"/>
+        <Label x:Name="CPUIdleThresholdLabel" Content="CPU Idle Threshold" HorizontalAlignment="Left" Margin="12,37,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="CPUIdleThresholdValue" Content="0" HorizontalAlignment="Left" Margin="164,37,0,0" VerticalAlignment="Top" Width="112"/>
+        <Label x:Name="NetworkSentLabel" Content="Network Sent" HorizontalAlignment="Left" Margin="12,100,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="NetworkSentValue" Content="0" HorizontalAlignment="Left" Margin="164,100,0,0" VerticalAlignment="Top" Width="91"/>
+        <Label x:Name="NetworkIdleThresholdLabel" Content="Network Idle Threshold" HorizontalAlignment="Left" Margin="12,125,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="NetworkIdleThresholdValue" Content="0" HorizontalAlignment="Left" Margin="164,125,0,0" VerticalAlignment="Top" Width="91"/>
+        <Label x:Name="NetworkIdleTimeLabel" Content="Network Idle Time" HorizontalAlignment="Left" Margin="12,150,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="NetworkIdleTimeValue" Content="0" HorizontalAlignment="Left" Margin="164,150,0,0" VerticalAlignment="Top" Width="108"/>
+        <Label x:Name="SleepTriggeredLabel" Content="Sleep Triggered" HorizontalAlignment="Left" Margin="12,222,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="SleepTriggeredValue" Content="-" HorizontalAlignment="Left" Margin="164,222,0,0" VerticalAlignment="Top" Width="108"/>
+        <Label x:Name="SleepIdleTimeLabel" Content="Sleep Idle Time" HorizontalAlignment="Left" Margin="12,198,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="SleepIdleTimeValue" Content="0" HorizontalAlignment="Left" Margin="164,198,0,0" VerticalAlignment="Top" Width="108"/>
+    </Grid>
+</Window>
