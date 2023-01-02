@@ -11,39 +11,30 @@ namespace SmartSleep
     {
         public Stopwatch stopwatch;
         public double idleTime => stopwatch.Elapsed.TotalSeconds;
-        bool _isActive = false;
+        bool _isIdle = false;
 
         public ResourceIdleTimer()
         {
             stopwatch = Stopwatch.StartNew();
-            stopwatch.Start();
         }
 
         public void Update(bool isActive)
         {
-            if (isActive)
+            if (!isActive)
             {
-                if (!_isActive)
+                if (!_isIdle)
+                    _isIdle = true;
+                stopwatch.Restart();
+            }
+            else
+            {
+                if (_isIdle)
                 {
-                    _isActive = true;
+                    _isIdle = false;
                     stopwatch.Stop();
                     stopwatch.Reset();
                 }
             }
-            else
-            {
-                if (_isActive)
-                {
-                    _isActive = false;
-                    stopwatch.Restart();
-                }
-            }
-        }
-
-        public void Reset()
-        {
-            _isActive = false;
-            stopwatch.Restart();
         }
     }
 }

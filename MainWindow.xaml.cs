@@ -1,5 +1,4 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,13 +23,12 @@ namespace SmartSleep
     {
         DispatcherTimer timer = new DispatcherTimer();
         SystemPerformance systemPerformance = new SystemPerformance();
-        float SleepTime = 5 * 60; // Sleep after X minutes
-        bool SleepTriggered = false;
+
+        double shutdownTime = 60;
 
         public MainWindow()
         {
             InitializeComponent();
-            SystemEvents.PowerModeChanged += OnPowerChange;
         }
 
         private void OnWindowLoaded(object sender, RoutedEventArgs e)
@@ -46,39 +44,25 @@ namespace SmartSleep
         {
             systemPerformance.Update();
 
-            CPUActivityValue.Content = string.Format("{0}", systemPerformance.HighestUtilization);
-            CPUIdleThresholdValue.Content = string.Format("{0}", systemPerformance.CPUIdleThresholdPct);
-            CPUIdleTimeValue.Content = string.Format("{0}", systemPerformance.CPUIdleTimer.idleTime.ToString("F0"));
+            var cpuActivityValue = (Label)this.FindName("CPUActivityValue");
+            cpuActivityValue.Content = string.Format("{0}", systemPerformance.HighestUtilization);
+            var cpuIdleThresholdValue = (Label)this.FindName("CPUIdleThresholdValue");
+            cpuIdleThresholdValue.Content = string.Format("{0}", systemPerformance.CPUIdleThresholdPct);
+            var CPUIdleTimeValue = (Label)this.FindName("CPUIdleTimeValue");
+            CPUIdleTimeValue.Content = string.Format("{0}", systemPerformance.CPUIdleTimer.idleTime);
+            var NetworkIdleThresholdValue = (Label)this.FindName("NetworkIdleThresholdValue");
             NetworkIdleThresholdValue.Content = string.Format("{0}", systemPerformance.NetworkIdleThreshold);
-            NetworkIdleTimeValue.Content = string.Format("{0}", systemPerformance.NetworkIdleTimer.idleTime.ToString("F0"));
+            var NetworkIdleTimeValue = (Label)this.FindName("NetworkIdleTimeValue");
+            NetworkIdleTimeValue.Content = string.Format("{0}", systemPerformance.NetworkIdleTimer.idleTime);
+            var NetworkSentValue = (Label)this.FindName("NetworkSentValue");
             NetworkSentValue.Content = string.Format("{0}", systemPerformance.TotalSent);
-            SleepTriggeredValue.Content = string.Format("{0}", SleepTriggered);
-            SleepIdleTimeValue.Content = string.Format("{0}", SleepTime);
+            //var networkIdleValue = (Label)this.FindName("NetworkIdleValue");
+            //networkIdleValue.Content = string.Format("{0}", systemPerformance.stopwatch.Elapsed.TotalSeconds);
 
-            // Shutdown when timer reached
-            if (systemPerformance.NetworkIdleTimer.idleTime > SleepTime &&
-                systemPerformance.CPUIdleTimer.idleTime > SleepTime)
+            if(systemPerformance.NetworkIdleTimer.idleTime > shutdownTime &&
+                systemPerformance.CPUIdleTimer.idleTime > shutdownTime)
             {
-                if(!SleepTriggered)
-                {
-                    SleepTriggered = true;
-                    SystemFunctions.SetSuspendState(false, true, true);
-                }
-            }
-        }
-
-        
-
-        private void OnPowerChange(object s, PowerModeChangedEventArgs e)
-        {
-            switch (e.Mode)
-            {
-                case PowerModes.Resume:
-                    SleepTriggered = false;
-                    systemPerformance.ResetTimers();
-                    break;
-                case PowerModes.Suspend:
-                    break;
+                SystemActions.Shutdown();
             }
         }
     }

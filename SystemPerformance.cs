@@ -13,18 +13,13 @@ namespace SmartSleep
     {
         public float HighestUtilization = 0;
         public float CPUIdleThresholdPct = 36.0f;
-        public long NetworkIdleThreshold = 25000;
+        public long NetworkIdleThreshold = 100000;
         public long TotalSent = 0;
 
         public Dictionary<string, CounterSample> cs = new Dictionary<string, CounterSample>();
         public Dictionary<string, long> networkInterfaces = new Dictionary<string, long>();
         public ResourceIdleTimer CPUIdleTimer = new ResourceIdleTimer();
-        public ResourceIdleTimer NetworkIdleTimer = new ResourceIdleTimer();
-        public void ResetTimers()
-        {
-            CPUIdleTimer.Reset();
-            NetworkIdleTimer.Reset();
-        }
+        public ResourceIdleTimer NetworkIdleTimer = new ResourceIdleTimer();        
 
         PerformanceCounter _cpuPC = new PerformanceCounter("Processor Information", "% Processor Time");
         PerformanceCounterCategory _cpuPI = new PerformanceCounterCategory("Processor Information");        
@@ -84,8 +79,8 @@ namespace SmartSleep
                 TotalSent += sendChange;
             }
 
-            CPUIdleTimer.Update(HighestUtilization >= CPUIdleThresholdPct);
-            NetworkIdleTimer.Update(HighestUtilization >= CPUIdleThresholdPct);
+            CPUIdleTimer.Update(HighestUtilization < CPUIdleThresholdPct);
+            NetworkIdleTimer.Update(HighestUtilization < CPUIdleThresholdPct);
         }
     }
 }
