@@ -11,10 +11,10 @@ namespace SmartSleep
 {
     class SystemPerformance
     {
-        public float HighestUtilization = 0;
+        public float HighestCPUUtilization = 0;
         public float CPUIdleThresholdPct = 36.0f;
         public long NetworkIdleThreshold = 100000;
-        public long TotalSent = 0;
+        public long NetworkSentPerTick = 0;
 
         public Dictionary<string, CounterSample> cs = new Dictionary<string, CounterSample>();
         public Dictionary<string, long> networkInterfaces = new Dictionary<string, long>();
@@ -50,7 +50,7 @@ namespace SmartSleep
 
         public void Update()
         {
-            HighestUtilization = 0;
+            HighestCPUUtilization = 0;
             foreach (var s in instances)
             {
                 _cpuPC.InstanceName = s;
@@ -61,12 +61,12 @@ namespace SmartSleep
                 if (m.Success)
                 {
                     float utilization = Calculate(oldSample, cs[s]);
-                    if (HighestUtilization < utilization)
-                        HighestUtilization = utilization;
+                    if (HighestCPUUtilization < utilization)
+                        HighestCPUUtilization = utilization;
                 }
             }
 
-            TotalSent = 0;
+            NetworkSentPerTick = 0;
             NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
             foreach (NetworkInterface ni in interfaces)
             {
@@ -76,11 +76,11 @@ namespace SmartSleep
                 var bytesSent = ni.GetIPv4Statistics().BytesSent;
                 networkInterfaces[ni.Name] = bytesSent;
                 var sendChange = bytesSent - lastSent;
-                TotalSent += sendChange;
+                NetworkSentPerTick += sendChange;
             }
 
-            CPUIdleTimer.Update(HighestUtilization < CPUIdleThresholdPct);
-            NetworkIdleTimer.Update(HighestUtilization < CPUIdleThresholdPct);
+            CPUIdleTimer.Update(HighestCPUUtilization > CPUIdleThresholdPct);
+            NetworkIdleTimer.Update(NetworkSentPerTick > NetworkIdleThreshold);
         }
     }
 }

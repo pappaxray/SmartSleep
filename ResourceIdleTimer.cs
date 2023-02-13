@@ -23,8 +23,10 @@ namespace SmartSleep
             if (!isActive)
             {
                 if (!_isIdle)
+                {
                     _isIdle = true;
-                stopwatch.Restart();
+                    stopwatch.Restart();
+                }
             }
             else
             {
