@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Management;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -26,6 +27,14 @@ namespace SmartSleep
             {
                 mboShutdown = manObj.InvokeMethod("Win32Shutdown", mboShutdownParams, null);
             }
+        }
+
+        [DllImport("Powrprof.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+        public static extern bool SetSuspendState(bool hiberate, bool forceCritical, bool disableWakeEvent);        
+
+        public static void Sleep()
+        {
+            SetSuspendState(false, true, true);
         }
     }
 }

@@ -25,7 +25,7 @@ namespace SmartSleep
         SystemPerformance systemPerformance = new SystemPerformance();
         TeamCityConnection teamcityConnection = new TeamCityConnection();
 
-        double shutdownTime = 60;
+        double shutdownTime = 5 * 60;
 
         public MainWindow()
         {
@@ -47,7 +47,7 @@ namespace SmartSleep
             systemPerformance.Update();
             teamcityConnection.Update();
 
-            var buildIdleTime = (float)Math.Floor((DateTime.Now - teamcityConnection.lastActiveTime).TotalSeconds);
+            var buildIdleTime = teamcityConnection.IsAgentRequired ? 0.0f : (float)Math.Floor((DateTime.Now - teamcityConnection.lastActiveTime).TotalSeconds);
             var networkIdleTime = (float)Math.Floor(systemPerformance.NetworkIdleTimer.idleTime);
 
             float idleTime = MathF.Min(networkIdleTime, buildIdleTime);
@@ -69,7 +69,8 @@ namespace SmartSleep
 
             if (idleTime >= shutdownTime)
             {
-                SystemActions.Shutdown();
+                //SystemActions.Shutdown();
+                SystemActions.Sleep();
             }
         }
     }
