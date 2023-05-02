@@ -12,13 +12,48 @@ namespace SmartSleep
     class TeamCityConnection
     {
         #region Interface
-        public AgentBuildState BuildState { get; private set; } = AgentBuildState.NotRunning;
+        public AgentBuildState AgentState
+        {
+            get
+            {
+                return _buildState;
+            }
+            
+            private set
+            {
+                if(_buildState != value)
+                {
+                    _buildState = value;
+                    Logger.Log($"Build state changed:{_buildState}");
+                }
+            }
+        }
+        AgentBuildState _buildState = AgentBuildState.Initialising;
+
+        public int BuildID
+        {
+            set
+            {
+                if (_buildID != value)
+                {
+                    _buildID = value;
+                    Logger.Log($"BuildID:{_buildID}");
+                }
+            }
+            get
+            {
+                return _buildID;
+            }
+        }
+        public int _buildID = -1;
+
         public DateTime lastActiveTime;
         #endregion
 
         public enum AgentBuildState
         {
-            Unknown,
+            Initialising,
+            Requesting,
             NotRunning,
             Running,
             Pending
@@ -36,7 +71,7 @@ namespace SmartSleep
         DateTime lastUpdate;
         bool requestingAgentState = false;
 
-        delegate void OnGetAgentStatusCompleteCB(AgentBuildState buildState);
+        delegate void OnGetAgentStatusCompleteCB(AgentBuildState buildState, int buildID);
         class AgentInfo
         {
             public bool Valid = false;
@@ -49,10 +84,11 @@ namespace SmartSleep
             public int BuildsPending = 0;
         }
 
-        class AgentState
+        class AgentStateRequest
         {
             public bool Valid = false;
-            public AgentBuildState BuildState;
+            public AgentBuildState State;
+            public int BuildID = -1;
         }
 
         public void Init()
@@ -102,9 +138,9 @@ namespace SmartSleep
             return result;
         }
 
-        static async Task<AgentState> GetAgentState(TeamCityConnection conn, int id)
+        static async Task<AgentStateRequest> GetAgentState(TeamCityConnection conn, int id)
         {
-            AgentState result = new AgentState();
+            AgentStateRequest result = new AgentStateRequest();
             conn.http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", conn.AccessToken);
             using HttpResponseMessage response = await conn.http.GetAsync($"app/rest/agents/id:{id}");
             if (HttpStatusCode.OK == response.StatusCode)
@@ -119,12 +155,22 @@ namespace SmartSleep
                     var state = build.Attributes.GetNamedItem("state");
                     if (state.Value == "running") // Found our agent
                     {
-                        result.BuildState = AgentBuildState.Running;
+                        result.State = AgentBuildState.Running;
+                    }
+                    else
+                    {
+                        Logger.Log($"Unexpected agent state:{state.Value}");
+                    }
+
+                    var buildIdAtt = build.Attributes.GetNamedItem("number");
+                    if (null != buildIdAtt)
+                    {
+                        result.BuildID = int.Parse(buildIdAtt.Value);
                     }
                 }
                 else
                 {
-                    result.BuildState = AgentBuildState.NotRunning;
+                    result.State = AgentBuildState.NotRunning;
                 }
             }
             return result;
@@ -132,15 +178,18 @@ namespace SmartSleep
 
         static async Task GetAgentStatus(TeamCityConnection conn, OnGetAgentStatusCompleteCB onComplete)
         {
-            var agentInfo = await GetAgentInfo(conn);
-            AgentBuildState buildState = AgentBuildState.Unknown;
+            AgentBuildState buildState = AgentBuildState.Requesting;
+            int buildID = -1;
+
+            var agentInfo = await GetAgentInfo(conn); // Check agent state to see if it's building
             if (agentInfo.Valid)
             {
-                var agentState = await GetAgentState(conn, agentInfo.Id);
-                buildState = agentState.BuildState;
+                var agentStateReq = await GetAgentState(conn, agentInfo.Id);
+                buildState = agentStateReq.State;
+                buildID = agentStateReq.BuildID;
             }
 
-            if (AgentBuildState.Running != buildState)
+            if (AgentBuildState.Running != buildState) // Agent is not running, check build queue to see if there is one pending
             {
                 var buildInfo = await GetBuildInfo(conn);
                 if (buildInfo.BuildsPending > 0)
@@ -148,7 +197,7 @@ namespace SmartSleep
                     buildState = AgentBuildState.Pending;
                 }
             }
-            onComplete(buildState);
+            onComplete(buildState, buildID);
         }
 
         public void Update()
@@ -167,15 +216,16 @@ namespace SmartSleep
         {
             get
             {
-                return BuildState == AgentBuildState.Running || BuildState == AgentBuildState.Pending;
+                return AgentState == AgentBuildState.Running || AgentState == AgentBuildState.Pending;
             }
         }
 
-        void OnGetAgentStatusComplete(AgentBuildState buildState)
+        void OnGetAgentStatusComplete(AgentBuildState buildState, int buildID)
         {
             requestingAgentState = false;
             lastUpdate = DateTime.Now;
-            BuildState = buildState;
+            AgentState = buildState;
+            BuildID = buildID;
             if (IsAgentRequired)
             {
                 lastActiveTime = DateTime.Now;

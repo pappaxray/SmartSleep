@@ -24,15 +24,20 @@ namespace SmartSleep
         DispatcherTimer timer = new DispatcherTimer();
         SystemPerformance systemPerformance = new SystemPerformance();
         TeamCityConnection teamcityConnection = new TeamCityConnection();
+        PowerManagement powerManagement = new PowerManagement();
 
         double shutdownTime = 5 * 60;
+        bool _logDirty = false;
 
         public MainWindow()
         {
+            Logger.Init();            
+            Logger.Log("Starting application");
+
             InitializeComponent();
         }
 
-        private void OnWindowLoaded(object sender, RoutedEventArgs e)
+        void OnWindowLoaded(object sender, RoutedEventArgs e)
         {
             timer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
             timer.Tick += new EventHandler(Tick);
@@ -40,7 +45,18 @@ namespace SmartSleep
 
             systemPerformance.Init();
             teamcityConnection.Init();
+
+            //var debugButton = (Button)this.FindName("DebugButton");
+            //debugButton.Click += DebugButton_Click;
+
+            Logger.OnLog += Logger_OnLog;
+            UpdateLog();
         }
+
+        /*void DebugButton_Click(object sender, RoutedEventArgs e)
+        {
+            Logger.Log("DebugButton");
+        }*/
 
         void Tick(object sender, EventArgs e)
         {
@@ -55,23 +71,34 @@ namespace SmartSleep
             var ShutdownTimeValue = (Label)this.FindName("ShutdownTimeValue");
             ShutdownTimeValue.Content = string.Format("{0}", shutdownTime - idleTime);
 
-            var NetworkIdleThresholdValue = (Label)this.FindName("NetworkIdleThresholdValue");
-            NetworkIdleThresholdValue.Content = string.Format("{0}", systemPerformance.NetworkIdleThreshold);
-            var NetworkIdleTimeValue = (Label)this.FindName("NetworkIdleTimeValue");
-            NetworkIdleTimeValue.Content = string.Format("{0}", networkIdleTime);
-            var NetworkSentValue = (Label)this.FindName("NetworkSentValue");
-            NetworkSentValue.Content = string.Format("{0}", systemPerformance.NetworkSentPerTick);
+            var AgentStatusValue = (Label)this.FindName("AgentStatusValue");
+            AgentStatusValue.Content = string.Format("{0}", teamcityConnection.AgentState);
+            var BuildIDValue = (Label)this.FindName("BuildIDValue");
+            BuildIDValue.Content = string.Format("{0}", teamcityConnection._buildID != -1 ? teamcityConnection._buildID : "None");
+            var AgentIdleValue = (Label)this.FindName("AgentIdleValue");
+            AgentIdleValue.Content = string.Format("{0}", buildIdleTime);
 
-            var BuildStatusValue = (Label)this.FindName("BuildStatusValue");
-            BuildStatusValue.Content = string.Format("{0}", teamcityConnection.BuildState);
-            var BuildIdleValue = (Label)this.FindName("BuildIdleValue");
-            BuildIdleValue.Content = string.Format("{0}", buildIdleTime);
+            if(_logDirty)
+            {
+                _logDirty = false;
+                UpdateLog();
+            }
 
             if (idleTime >= shutdownTime)
             {
-                //SystemActions.Shutdown();
-                SystemActions.Sleep();
+                powerManagement.Sleep();
             }
+        }
+
+        void UpdateLog()
+        {
+            var outputValue = (TextBox)this.FindName("OutputValue");
+            outputValue.Text = Logger.LogText;
+        }
+
+        void Logger_OnLog(string txt)
+        {
+            _logDirty = true;
         }
     }
 }
