@@ -47,6 +47,14 @@ namespace SmartSleep
         }
         public int _buildID = -1;
 
+        public int SecsSinceLastUpdate
+        {
+            get
+            {
+                return (DateTime.Now - lastUpdate).Seconds;
+            }
+        }
+
         public DateTime lastActiveTime;
         #endregion
 
@@ -72,6 +80,8 @@ namespace SmartSleep
         bool requestingAgentState = false;
 
         delegate void OnGetAgentStatusCompleteCB(AgentBuildState buildState, int buildID);
+        delegate void OnGetAgentStatusErrorCB(string txt);
+
         class AgentInfo
         {
             public bool Valid = false;
@@ -176,38 +186,45 @@ namespace SmartSleep
             return result;
         }
 
-        static async Task GetAgentStatus(TeamCityConnection conn, OnGetAgentStatusCompleteCB onComplete)
+        static async Task GetAgentStatus(TeamCityConnection conn, OnGetAgentStatusCompleteCB onComplete, OnGetAgentStatusErrorCB onError)
         {
-            AgentBuildState buildState = AgentBuildState.Requesting;
-            int buildID = -1;
-
-            var agentInfo = await GetAgentInfo(conn); // Check agent state to see if it's building
-            if (agentInfo.Valid)
+            try
             {
-                var agentStateReq = await GetAgentState(conn, agentInfo.Id);
-                buildState = agentStateReq.State;
-                buildID = agentStateReq.BuildID;
-            }
+                AgentBuildState buildState = AgentBuildState.Requesting;
+                int buildID = -1;
 
-            if (AgentBuildState.Running != buildState) // Agent is not running, check build queue to see if there is one pending
-            {
-                var buildInfo = await GetBuildInfo(conn);
-                if (buildInfo.BuildsPending > 0)
+                var agentInfo = await GetAgentInfo(conn); // Check agent state to see if it's building
+                if (agentInfo.Valid)
                 {
-                    buildState = AgentBuildState.Pending;
+                    var agentStateReq = await GetAgentState(conn, agentInfo.Id);
+                    buildState = agentStateReq.State;
+                    buildID = agentStateReq.BuildID;
                 }
+
+                if (AgentBuildState.Running != buildState) // Agent is not running, check build queue to see if there is one pending
+                {
+                    var buildInfo = await GetBuildInfo(conn);
+                    if (buildInfo.BuildsPending > 0)
+                    {
+                        buildState = AgentBuildState.Pending;
+                    }
+                }
+                onComplete(buildState, buildID);
             }
-            onComplete(buildState, buildID);
+            catch(Exception e)
+            {
+                onError(e.Message);
+            }
         }
 
         public void Update()
         {
             if (!requestingAgentState)
             {
-                if ((DateTime.Now - lastUpdate).Seconds > updateIntervalSecs)
+                if (SecsSinceLastUpdate > updateIntervalSecs)
                 {
                     requestingAgentState = true;
-                    Task.Run(() => GetAgentStatus(this, OnGetAgentStatusComplete));
+                    Task.Run(() => GetAgentStatus(this, OnGetAgentStatusComplete, OnGetAgentSatusError));
                 }
             }
         }
@@ -230,6 +247,13 @@ namespace SmartSleep
             {
                 lastActiveTime = DateTime.Now;
             }
+        }
+
+        void OnGetAgentSatusError(string err)
+        {
+            requestingAgentState = false;
+            lastUpdate = DateTime.Now;
+            Logger.Log($"GetAgentSatusError:{err}");
         }
     }
 }
