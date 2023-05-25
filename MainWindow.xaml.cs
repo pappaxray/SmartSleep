@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -28,13 +29,21 @@ namespace SmartSleep
 
         double shutdownTime = 5 * 60;
         bool _logDirty = false;
+        DateTime _agentIdle;
 
         public MainWindow()
         {
             Logger.Init();            
             Logger.Log("Starting application");
+            _agentIdle = DateTime.Now;
 
+            SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
             InitializeComponent();
+        }
+
+        private void SystemEvents_PowerModeChanged(object sender, PowerModeChangedEventArgs e)
+        {
+            _agentIdle = DateTime.Now;
         }
 
         void OnWindowLoaded(object sender, RoutedEventArgs e)
@@ -63,10 +72,10 @@ namespace SmartSleep
             systemPerformance.Update();
             teamcityConnection.Update();
 
-            var buildIdleTime = teamcityConnection.IsAgentRequired ? 0.0f : (float)Math.Floor((DateTime.Now - teamcityConnection.lastActiveTime).TotalSeconds);
-            var networkIdleTime = (float)Math.Floor(systemPerformance.NetworkIdleTimer.idleTime);
+            var teamCityIdleTime = teamcityConnection.IsAgentRequired ? 0.0f : (float)Math.Floor((DateTime.Now - teamcityConnection.lastActiveTime).TotalSeconds);
+            var systemIdleTime = (float)Math.Floor((DateTime.Now - _agentIdle).TotalSeconds);
 
-            float idleTime = MathF.Min(networkIdleTime, buildIdleTime);
+            float idleTime = MathF.Min(teamCityIdleTime, systemIdleTime);
 
             var ShutdownTimeValue = (Label)this.FindName("ShutdownTimeValue");
             ShutdownTimeValue.Content = string.Format("{0}", shutdownTime - idleTime);
@@ -75,10 +84,17 @@ namespace SmartSleep
             AgentStatusValue.Content = string.Format("{0}", teamcityConnection.AgentState);
             var BuildIDValue = (Label)this.FindName("BuildIDValue");
             BuildIDValue.Content = string.Format("{0}", teamcityConnection._buildID != -1 ? teamcityConnection._buildID : "None");
-            var AgentIdleValue = (Label)this.FindName("AgentIdleValue");
-            AgentIdleValue.Content = string.Format("{0}", buildIdleTime);
 
-            if(_logDirty)
+            var TeamCityIdleValue = (Label)this.FindName("TeamCityIdleValue");
+            TeamCityIdleValue.Content = string.Format("{0}", teamCityIdleTime);
+
+            var SystemIdleValue = (Label)this.FindName("SystemIdleValue");
+            SystemIdleValue.Content = string.Format("{0}", systemIdleTime);
+
+            var LastTeamCityUpdateValue = (Label)FindName("LastTeamCityUpdateValue");
+            LastTeamCityUpdateValue.Content = string.Format("{0}", teamcityConnection.SecsSinceLastUpdate);
+
+            if (_logDirty)
             {
                 _logDirty = false;
                 UpdateLog();

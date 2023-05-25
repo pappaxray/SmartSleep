@@ -25,7 +25,6 @@ namespace SmartSleep
         PerformanceCounterCategory _cpuPI = new PerformanceCounterCategory("Processor Information");        
         string[] instances;
         Regex getCpuAndCore = new Regex(@"(\d+),(\d+)", RegexOptions.Compiled);
-        
 
         public static float Calculate(CounterSample oldSample, CounterSample newSample)
         {

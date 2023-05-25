@@ -5,23 +5,27 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SmartSleep"
         mc:Ignorable="d"
-        Title="SmartSleep" Height="302" Width="674" Loaded="OnWindowLoaded">
-    <Grid>
+        Title="SmartSleep" Height="361" Width="623" Loaded="OnWindowLoaded">
+    <Grid Height="NaN" Margin="0,0,0,-6" Width="NaN">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="4*"/>
-            <ColumnDefinition/>
+            <ColumnDefinition Width="62*"/>
+            <ColumnDefinition Width="137*"/>
         </Grid.ColumnDefinitions>
-        <Label x:Name="ShutdownTimeLabel" Content="Shutdown In" HorizontalAlignment="Left" Margin="12,9,0,0" VerticalAlignment="Top"/>
-        <Label x:Name="ShutdownTimeValue" Content="0" HorizontalAlignment="Left" Margin="164,9,0,0" VerticalAlignment="Top" Width="110"/>
+        <Label x:Name="ShutdownTimeLabel" Content="Shutdown In" HorizontalAlignment="Left" Margin="12,9,0,0" VerticalAlignment="Top" Height="26" Width="77"/>
+        <Label x:Name="ShutdownTimeValue" Content="0" HorizontalAlignment="Left" Margin="13,9,0,0" VerticalAlignment="Top" Width="110" Grid.Column="1" Height="26"/>
 
-        <Label x:Name="AgentStatusLabel" Content="AgentStatus" HorizontalAlignment="Left" Margin="12,32,0,0" VerticalAlignment="Top"/>
-        <Label x:Name="AgentStatusValue" Content="Unknown" HorizontalAlignment="Left" Margin="164,32,0,0" VerticalAlignment="Top" Width="108"/>
-        <Label x:Name="BuildIDLabel" Content="BuildID" HorizontalAlignment="Left" Margin="12,55,0,0" VerticalAlignment="Top"/>
-        <Label x:Name="BuildIDValue" Content="None" HorizontalAlignment="Left" Margin="164,55,0,0" VerticalAlignment="Top" Width="108"/>
-        <Label x:Name="AgentIdleLabel" Content="Agent Idle Time" HorizontalAlignment="Left" Margin="12,80,0,0" VerticalAlignment="Top"/>
-        <Label x:Name="AgentIdleValue" Content="0" HorizontalAlignment="Left" Margin="164,80,0,0" VerticalAlignment="Top" Width="108"/>
-        <Label x:Name="OutputLabel" Content="Output" HorizontalAlignment="Left" Margin="12,102,0,0" VerticalAlignment="Top"/>
-        <TextBox  ScrollViewer.VerticalScrollBarVisibility="Auto" x:Name="OutputValue" Margin="17,128,16,19" TextWrapping="Wrap" Text="TextBox"/>
+        <Label x:Name="AgentStatusLabel" Content="AgentStatus" HorizontalAlignment="Left" Margin="12,32,0,0" VerticalAlignment="Top" Height="26" Width="74"/>
+        <Label x:Name="AgentStatusValue" Content="Unknown" HorizontalAlignment="Left" Margin="13,32,0,0" VerticalAlignment="Top" Width="108" Grid.Column="1" Height="26"/>
+        <Label x:Name="BuildIDLabel" Content="BuildID" HorizontalAlignment="Left" Margin="12,56,0,0" VerticalAlignment="Top" Height="26" Width="48"/>
+        <Label x:Name="BuildIDValue" Content="None" HorizontalAlignment="Left" Margin="13,56,0,0" VerticalAlignment="Top" Width="108" Grid.Column="1" Height="26"/>
+        <Label x:Name="TeamCityIdleLabel" Content="TeamCity Idle Time" HorizontalAlignment="Left" Margin="12,102,0,0" VerticalAlignment="Top" Height="26" Width="132"/>
+        <Label x:Name="TeamCityIdleValue" Content="0" HorizontalAlignment="Left" Margin="13,102,0,0" VerticalAlignment="Top" Width="108" Grid.Column="1" Height="26"/>
+        <Label x:Name="SystemIdleLabel" Content="System Idle Time" HorizontalAlignment="Left" Margin="12,80,0,0" VerticalAlignment="Top" Height="26" Width="132"/>
+        <Label x:Name="SystemIdleValue" Content="0" HorizontalAlignment="Left" Margin="13,80,0,0" VerticalAlignment="Top" Width="108" Grid.Column="1" Height="26"/>
+        <Label x:Name="OutputLabel" Content="Output" HorizontalAlignment="Left" Margin="12,154,0,0" VerticalAlignment="Top" Height="26" Width="48"/>
+        <TextBox  ScrollViewer.VerticalScrollBarVisibility="Auto" x:Name="OutputValue" Margin="17,196,136,19" TextWrapping="Wrap" Text="TextBox" Grid.ColumnSpan="2" Height="NaN"/>
+        <Label x:Name="LastTeamCityUpdateLabel" Content="Last TeamCity Update" HorizontalAlignment="Left" Margin="11,127,0,0" VerticalAlignment="Top" Height="26" Width="100"/>
+        <Label x:Name="LastTeamCityUpdateValue" Content="0" HorizontalAlignment="Left" Margin="13,127,0,0" VerticalAlignment="Top" Width="108" Grid.Column="1" Height="26"/>
         <!-- <Button x:Name="DebugButton" Content="Button" HorizontalAlignment="Left" Margin="424,58,0,0" VerticalAlignment="Top"/>-->
     </Grid>
 </Window>
